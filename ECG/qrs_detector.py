@@ -7,6 +7,7 @@ Created on Thu Jan 30 07:08:22 2014
 
 #first import all the modules we neeed
 
+from __future__ import division
 import numpy as np
 import scipy as sc
 from scipy.interpolate import interp1d
@@ -113,7 +114,7 @@ def exp_beat_detection(ecg,fs,Tr = .180,a = .7,b = 0.999):
 # R-peak detection
 ###############################################################################    
 
-def r_peak_detection(ecg_filtered,ecg_original,fs,beat,th,qrs_index,Tr = .180):
+def r_peak_detection(ecg_filtered,ecg_original,fs,beat,th,qrs_index,Tr = .100):
     """ r-peak detection in the original ecg. Once, the QRS is detected in the
     filtered ecg, this functions allows to estimate de position of the r-peak
     
@@ -143,109 +144,110 @@ def r_peak_detection(ecg_filtered,ecg_original,fs,beat,th,qrs_index,Tr = .180):
             r_peaks[idx - 3 + idx_rpeak] = 1
     #end of for        
     r_peak = np.nonzero(r_peaks)[0]
-    rr = (np.diff(r_peak)/fs) * 1000
+    rr = (np.diff(r_peak)/fs)*1000.
     return r_peak, rr
 #load ecg
 
-ecg = np.loadtxt("1698287.txt",delimiter = ',')
+#ecg = np.loadtxt("opensignals_201510266565_2016-11-16_12-51-32.txt",delimiter = ',')
+#ecg = ecg[:,7]
 #ecg = np.loadtxt("4554_5054994_Data.txt",delimiter = ',')
 #fs = 500.
-fs = 1000.
-gain = 200.
-t = np.arange(0,len(ecg))/fs
-ecg_1 = ecg[:,1]/max(ecg[:,1])
-
-
-
-#detrend 
-ecg_d,trend = detrendSpline(ecg_1,fs)
-plt.plot(t,ecg_1)
-plt.plot(t,trend,color='r',linewidth = 3)
-plt.xlabel('Time (sec)')
-plt.ylabel('ECG (mV)')
-#bandpass filter
-ecg_filtered = bandpass_qrs_filter(ecg_d,fs = fs,fc1 = 8,fc2 = 20)
-
-plt.figure()
-plt.subplot(211)
-plt.plot(t,ecg_d)
-plt.xlabel('Time (sec)')
-plt.ylabel('ECG (mV)')
-plt.subplot(212)
-plt.plot(t,ecg_filtered)
-plt.xlabel('Time (sec)')
-plt.ylabel('ECG (mV)')
+#fs = 1000.
+#gain = 200.
+#t = np.arange(0,len(ecg))/fs
+#ecg_1 = ecg[:]/max(ecg[:])
+#
+#
+#
+##detrend 
+#ecg_d,trend = detrendSpline(ecg_1,fs)
+#plt.plot(t,ecg_1)
+#plt.plot(t,trend,color='r',linewidth = 3)
+#plt.xlabel('Time (sec)')
+#plt.ylabel('ECG (mV)')
+##bandpass filter
+#ecg_filtered = bandpass_qrs_filter(ecg_d,fs = fs,fc1 = 8,fc2 = 20)
+#
+#plt.figure()
+#plt.subplot(211)
+#plt.plot(t,ecg_d)
+#plt.xlabel('Time (sec)')
+#plt.ylabel('ECG (mV)')
+#plt.subplot(212)
+#plt.plot(t,ecg_filtered)
+#plt.xlabel('Time (sec)')
+#plt.ylabel('ECG (mV)')
+##plt.show()
+#
+###non linear transformation
+#ecg_filtered = np.abs(ecg_filtered)
+##exponential detection
+#beat,th, qrs_index = exp_beat_detection(ecg_filtered,fs)
+#r_peak, rr = r_peak_detection(ecg_filtered, np.abs(ecg_1) ,fs,beat,th,qrs_index)
+##
+#plt.figure()
+#plt.plot(t,ecg_filtered)
+#plt.plot(t,th)
+#plt.plot(t[qrs_index],ecg_filtered[qrs_index],'r*')
+#plt.xlabel('Time (sec)')
+#plt.ylabel('ECG (mV)')
+#
+#plt.figure()
+#plt.subplot(211)
+#plt.plot(t,ecg_1)
+#plt.plot(t[r_peak],ecg_1[r_peak],'r*')
+#plt.xlabel('Time (sec)')
+#plt.ylabel('ECG (mV)')
+#plt.subplot(212)
+#plt.plot(rr,'.-')
+#plt.xlabel('# of beat')
+#plt.ylabel('RR-interval (ms)')
 #plt.show()
-
-##non linear transformation
-ecg_filtered = np.abs(ecg_filtered)
-#exponential detection
-beat,th, qrs_index = exp_beat_detection(ecg_filtered,fs)
-r_peak, rr = r_peak_detection(ecg_filtered, np.abs(ecg_1) ,fs,beat,th,qrs_index)
 #
-plt.figure()
-plt.plot(t,ecg_filtered)
-plt.plot(t,th)
-plt.plot(t[qrs_index],ecg_filtered[qrs_index],'r*')
-plt.xlabel('Time (sec)')
-plt.ylabel('ECG (mV)')
-
-plt.figure()
-plt.subplot(211)
-plt.plot(t,ecg_1)
-plt.plot(t[r_peak],ecg_1[r_peak],'r*')
-plt.xlabel('Time (sec)')
-plt.ylabel('ECG (mV)')
-plt.subplot(212)
-plt.plot(rr,'.-')
-plt.xlabel('# of beat')
-plt.ylabel('RR-interval (ms)')
-plt.show()
-
-######
-#file_path = '/Users/obarquero/Dropbox/AASM_MasterIB/Tema_2/signals/ecg/pat1.dat'
-
-#ecg_line = np.loadtxt(file_path)
-#fs_new = 300.
-#ecg_d,trend = detrendSpline(ecg_line,fs)
-
-#plt.figure()
-#plt.plot(ecg_line)
-#plt.plot(trend,'r',linewidth = 3)
-
-#plt.figure()
-#plt.plot(ecg_d)
-#plt.show()
-
-
-#######################################
-# PCA
-#######################################
-#from sklearn.decomposition import PCA
+#######
+##file_path = '/Users/obarquero/Dropbox/AASM_MasterIB/Tema_2/signals/ecg/pat1.dat'
+#
+##ecg_line = np.loadtxt(file_path)
+##fs_new = 300.
+##ecg_d,trend = detrendSpline(ecg_line,fs)
+#
+##plt.figure()
+##plt.plot(ecg_line)
+##plt.plot(trend,'r',linewidth = 3)
+#
+##plt.figure()
+##plt.plot(ecg_d)
+##plt.show()
 #
 #
-#pca_1 = PCA()
-#X_pca = pca_1.fit_transform(ecg[:,1:])
-#
-#ecg_free = np.loadtxt("2989662.txt",delimiter = ',')
-#pca_2 = PCA()
-#X_pca_2 = pca_2.fit_transform(ecg_free[:,1:])
-#
-#plt.figure()
-#plt.subplot(121)
-#for n in range(12):
-#    plt.plot(ecg[:,n+1]+n*200,color = 'k')
-#    
-#plt.subplot(122)
-#for m in range(11):
-#    plt.plot(X_pca[:,11-m]+m*200,color = 'k')
-#
-#plt.figure()
-#plt.subplot(121)
-#for n in range(12):
-#    plt.plot(ecg_free[:,n+1]+n*200,color = 'k')
-#    
-#plt.subplot(122)
-#for m in range(11):
-#    plt.plot(X_pca_2[:,11-m]+m*200,color = 'k')
-#plt.show()
+########################################
+## PCA
+########################################
+##from sklearn.decomposition import PCA
+##
+##
+##pca_1 = PCA()
+##X_pca = pca_1.fit_transform(ecg[:,1:])
+##
+##ecg_free = np.loadtxt("2989662.txt",delimiter = ',')
+##pca_2 = PCA()
+##X_pca_2 = pca_2.fit_transform(ecg_free[:,1:])
+##
+##plt.figure()
+##plt.subplot(121)
+##for n in range(12):
+##    plt.plot(ecg[:,n+1]+n*200,color = 'k')
+##    
+##plt.subplot(122)
+##for m in range(11):
+##    plt.plot(X_pca[:,11-m]+m*200,color = 'k')
+##
+##plt.figure()
+##plt.subplot(121)
+##for n in range(12):
+##    plt.plot(ecg_free[:,n+1]+n*200,color = 'k')
+##    
+##plt.subplot(122)
+##for m in range(11):
+##    plt.plot(X_pca_2[:,11-m]+m*200,color = 'k')
+##plt.show()

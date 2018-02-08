@@ -34,18 +34,18 @@ class HRV(object):
         logIndex = []
         tinn = []
         
-        for i,elem in enumerate(rr): 
-            #print i," de ",len(rr)
-            avnn.append(self.avnn(elem))
-            nn50.append(self.nn50(elem))
-            pnn50.append(self.pnn50(elem))            
-            rmssd.append(self.rmssd(elem))            
-            sdnn.append(self.sdnn(elem))            
-            sdsd.append(self.sdsd(elem))
-            hrvTriangIndex.append(self.hrvTriangIndex(elem))
-            logIndex.append(self.logIndex(elem))            
-            tinn.append(self.tinn(elem))
-            
+#        for i,elem in enumerate(rr): 
+#            #print i," de ",len(rr)
+#            avnn.append(self.avnn(elem))
+#            nn50.append(self.nn50(elem))
+#            pnn50.append(self.pnn50(elem))            
+#            rmssd.append(self.rmssd(elem))            
+#            sdnn.append(self.sdnn(elem))            
+#            sdsd.append(self.sdsd(elem))
+#            hrvTriangIndex.append(self.hrvTriangIndex(elem))
+#            logIndex.append(self.logIndex(elem))            
+#            tinn.append(self.tinn(elem))
+#            
         hrv_pat['AVNN'] = avnn
         hrv_pat['NN50'] = nn50
         hrv_pat['PNN50'] = pnn50
@@ -591,7 +591,7 @@ class HRV(object):
         ind_not_N = [False]*len(rr)
         ind_not_N = np.array(ind_not_N) #convert to a numpy array
         
-        pos_ind_not_N = (np.where(rr > 2000) and np.where(rr < 300))[0]
+        pos_ind_not_N = np.concatenate((np.where(rr > 2000)[0],np.where(rr<300)[0]))
         
         if len(pos_ind_not_N) > 0:
             ind_not_N[pos_ind_not_N] = True
@@ -603,8 +603,8 @@ class HRV(object):
         
     def beat_label_filter(self, beat_labels, numBeatsAfterV = 4):
         """
-        Function that identify non-normal beats, and filter the rr signal to
-        produces a vector identifying the positions where are non-normal beats.
+        Function that identifies non-normal beats, and filters the rr signal to
+        produce a vector identifying the positions where are non-normal beats.
 
         Input arguments:
             numBeatsAfterV <= 4
@@ -689,16 +689,16 @@ class HRV(object):
             
         ind_not_N_3 = np.array(self.threshold_filter(rr))
             
-        ind_not_N_beats = np.logical_or(ind_not_N_1, ind_not_N_2, ind_not_N_3)
+        ind_not_N_beats = np.logical_or(ind_not_N_1, np.logical_or(ind_not_N_2, ind_not_N_3))
                     
         return ind_not_N_beats
         
         
         
         
-    def is_valid (self, ind_not_N,perct_valid = 0.15):
+    def is_valid(self, ind_not_N,perct_valid = 0.2):
         """
-        Function that checks if there are more than 15% of invalid values ​​in the vector, 
+        Function that checks if there are more than 20% of invalid values ​​in the vector, 
         where True is an invalid value
         
         Returns True if it contains less than 15% of invalid values
