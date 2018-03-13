@@ -24,27 +24,15 @@ class HRV(object):
         calculated from the list of the rr intervals passed as a parameter
         """
         hrv_pat = {}
-        avnn = []
-        nn50 = []
-        pnn50 = []
-        rmssd = []
-        sdnn = []
-        sdsd = []
-        hrvTriangIndex = []
-        logIndex = []
-        tinn = []
-        
-#        for i,elem in enumerate(rr): 
-#            #print i," de ",len(rr)
-#            avnn.append(self.avnn(elem))
-#            nn50.append(self.nn50(elem))
-#            pnn50.append(self.pnn50(elem))            
-#            rmssd.append(self.rmssd(elem))            
-#            sdnn.append(self.sdnn(elem))            
-#            sdsd.append(self.sdsd(elem))
-#            hrvTriangIndex.append(self.hrvTriangIndex(elem))
-#            logIndex.append(self.logIndex(elem))            
-#            tinn.append(self.tinn(elem))
+        avnn = self.avnn(rr)
+        nn50 = self.nn50(rr)
+        pnn50 = self.pnn50(rr)            
+        rmssd = self.rmssd(rr)            
+        sdnn = self.sdnn(rr)           
+        sdsd = self.sdsd(rr)
+        hrvTriangIndex = self.hrvTriangIndex(rr)
+        logIndex = self.logIndex(rr)          
+        tinn = self.tinn(rr)
 #            
         hrv_pat['AVNN'] = avnn
         hrv_pat['NN50'] = nn50
@@ -612,6 +600,7 @@ class HRV(object):
             ind_not_N:  has 1 in the position where there is a non-sinusal beat as
                         classified by the label information.
         """
+        beat_labels = np.array(beat_labels)
         ind_not_N =[False] * len(beat_labels) #vector with False in every position
         ind_not_N = np.array(ind_not_N) #convert to a numpy array
   
@@ -723,6 +712,8 @@ class HRV(object):
         
         The interpolator method is given by the string method (cubic','linear','nearest').
         """
+        
+                
         
         t_rr = np.cumsum(rr)
 
