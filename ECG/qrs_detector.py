@@ -30,14 +30,14 @@ def detrendSpline(signal,fs,l_w = 1.2):
     
     numSeg = np.floor(t[-1]/l_w)
 
-    s_m = np.zeros(numSeg)
-    t_m = np.zeros(numSeg)
+    s_m = np.zeros(int(numSeg))
+    t_m = np.zeros(int(numSeg))
     
-    for k in np.arange(numSeg):
+    for k in range(int(numSeg)):
         #for over each window and compute the median
         ind_seg = (t >= (k)*l_w) & (t <= (k+1)*l_w)
         t_aux = t[ind_seg]
-        t_m[k] = t_aux[np.round(t_aux.size/2)]
+        t_m[k] = t_aux[int(len(t_aux)/2)]
         s_m[k] = np.median(signal[ind_seg]);
    
     #fit the spline to the median points
