@@ -10,6 +10,10 @@ from __future__ import unicode_literals
 import numpy as np
 import matplotlib.pylab as plt
 from scipy import interpolate
+import numpy as np
+from scipy.interpolate import interp1d
+import matplotlib.pyplot as plt
+from scipy import signal
 
 class HRV(object):
     
@@ -559,6 +563,95 @@ class HRV(object):
             
         return res
         
+############################## HRV spectral #################################
+    def interp_to_psd(self,rr, t = None, fs = 4., method = 'cubic'):
+    
+        ts = 1/fs #sampling frequency
+        
+        t_new = np.arange(t[0],t[-1],ts) #nuevo vector para la interpolacion
+        #Interpolacion
+        f = interp1d(t, rr, kind = method) #crea el objeto para interpolar
+        
+        #Ahora realizamos la interpolación realmente
+        rr_interp = f(t_new)
+        
+        return rr_interp,t_new
+    
+    
+    #Función que calcula el periodograma de Welch para el intervalo de tiempo rr
+    #dado, que se supone que se interpola en fs
+    def Welch_Periodogram(self,rr, fs = 4., window = 'hamming', nperseg = 256, noverlap = 256/2, nfft  = 1024):
+        
+        rr = rr - np.mean(rr)
+        
+        #Eliminar la tendencia lineal a lo largo del eje de datos
+        rr = signal.detrend(rr)
+        
+        f, p = signal.welch(rr, fs, window = window, nperseg = nperseg, noverlap = noverlap, nfft = nfft)
+        #f, p = signal.welch(rr, fs, window = 'hanning', nperseg = 256, noverlap = 128, nfft  = 1024)
+        
+        return f, p #p: densidad espectral de potencia
+                    #f: vector frecuencia
+                 
+    def spectral_indices(self,Pxx, f, duration = 5):
+        
+        if duration == 5:
+            indVlf = f <= 0.04
+            indUlf = []
+        elif duration >= 5:
+            indUlf = f <= 0.003
+            indVlf = np.bitwise_and(f > 0.003, f <= 0.04);
+            
+        ind = f <= 0.4
+        indLf = np.bitwise_and(f > 0.04, f <= 0.15)
+        indHf = np.bitwise_and(f > 0.15, f <= 0.4)
+        
+        df = f[1]
+        
+        #Cálculo de la potencia total
+        Ptot = df * sum(Pxx[ind])
+        
+        #Cálculo potencia en la banda ULF
+        if len(indUlf) == 0:
+            Pulf = df * sum(Pxx[indUlf]) #En ms^2
+        else:
+            Pulf = [];
+            
+        #Cálculo potencia en la banda VLF
+        Pvlf = df * sum(Pxx[indVlf]); 
+        
+        #Cálculo potencia en la banda LF
+        Plf = df * sum(Pxx[indLf]);
+        
+        #Cálculo potencia en la banda HF
+        Phf = df * sum(Pxx[indHf]);
+        
+        #Cáculo del ratio LF/HF
+        lfhf_ratio = Plf/Phf;
+         
+        return Ptot, Pulf, Pvlf, Plf, Phf, lfhf_ratio
+    
+    def main_interp(self,rr, t = None, duration = 5):
+        if t == None:
+            t = np.cumsum(rr)/1000.
+    
+        #Interpolación
+        
+        rr_interpolated_4_hz, t_new = self.interp_to_psd(rr,t)
+        
+        return rr_interpolated_4_hz, t_new
+    
+    def main_welch(self,rr_interpolated_4_hz, t = None, duration = 5):
+        
+        f, Pxx = self.Welch_Periodogram(rr_interpolated_4_hz,  4., 'hamming', 256, 128, 1024)
+        
+        return f, Pxx
+    
+    def main_spectral_indices(self,Pxx, f = None, duration = 5):
+        
+        Ptot, Pulf, Pvlf, Plf, Phf, lfhf_ratio = self.spectral_indices(Pxx, f, duration = 5.)
+        
+        return Ptot, Pulf, Pvlf, Plf, Phf, lfhf_ratio
         
 ############################# HRV_Preprocessing #############################       
                
