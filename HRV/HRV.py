@@ -37,6 +37,11 @@ class HRV(object):
         hrvTriangIndex = self.hrvTriangIndex(rr)
         logIndex = self.logIndex(rr)          
         tinn = self.tinn(rr)
+        
+        #spectral indices
+        rr_interpolated_4_hz, t_new = self.main_interp(rr)
+        f, Pxx = self.main_welch(rr_interpolated_4_hz)
+        Ptot, Pulf, Pvlf, Plf, Phf, lfhf_ratio = self.main_spectral_indices(Pxx,f=f)
 #            
         hrv_pat['AVNN'] = avnn
         hrv_pat['NN50'] = nn50
@@ -47,6 +52,14 @@ class HRV(object):
         hrv_pat['HRVTriangIndex'] = hrvTriangIndex
         hrv_pat['logIndex'] = logIndex
         hrv_pat['TINN'] = tinn
+        
+        #spectral indices
+        hrv_pat['Ptot'] = Ptot
+        hrv_pat['Pulf'] = Pulf
+        hrv_pat['Pvlf'] = Pvlf
+        hrv_pat['Plf'] = Plf
+        hrv_pat['Phf'] = Phf
+        hrv_pat['lfhf_ratio'] = lfhf_ratio
         
         return  hrv_pat
         
@@ -90,11 +103,11 @@ class HRV(object):
         the entire time series that is passed as the input parameter.
         """
         #Differences between adjacent NN intervals.
-        d = np.diff(nn)
+        dd = np.diff(nn)
         #Number of adjacent intervals whose distance is greater than 50ms
-        num = float(sum(abs(d) > 50))
+        num = float(sum(abs(dd) > 50))
         #Percentage
-        res = num/len(d)*100
+        res = num/len(dd)*100
         return res
         
         
@@ -287,7 +300,7 @@ class HRV(object):
         nhist = x.size
 
         #Histogram
-        [N, X] = plt.histogram(rr,nhist)
+        [N, X] = np.histogram(rr,nhist)
 
         #Only the non-empty bins are taken into account
         ind = np.where(N != 0)
