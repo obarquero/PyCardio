@@ -125,8 +125,8 @@ class HRT(object):
             #in HRT analysis
         
         #Indices relatives for conditions
-        idx_no_vpc = np.asarray(range(-6,-2+1) + range(0,post_cp_beats+1)) + 6
-        idx_no_vpc_no_cp = np.asarray(range(-6,-2+1) + range(1,post_cp_beats+1)) + 6
+        idx_no_vpc = np.asarray(list(range(-6,-2+1)) + list(range(0,post_cp_beats+1))) + 6
+        idx_no_vpc_no_cp = np.asarray(list(range(-6,-2+1)) + list(range(1,post_cp_beats+1))) + 6
         
         
         i = 0
