@@ -4,7 +4,7 @@ Extracts the data contained in the Holter's file of a patient.
 """
 
 
-from __future__ import unicode_literals
+#from __future__ import unicode_literals
 import codecs
 import numpy as np
 
@@ -49,11 +49,30 @@ class HolterData(object):
         self.HRegTime[line2[3]] = line2[4]
         self.HRegTime[line2[5]] = line2[6]
      
+        
         #From the third line to the end, we find the information of the RR intervals
-        holter = np.loadtxt(fileName, dtype = str, skiprows = 2, delimiter = '\t')
-        self.RRtimes = np.array(holter[:,0], dtype = str)       #First column
-        self.RRInts = np.array(holter[:,1], dtype = float)      #Second column
-        self.Labels = np.array(holter[:,2], dtype = str)        #Third column
+        Holter = codecs.open(fileName, 'r', "iso-8859-1") 
+        
+        rr = []
+        rrInts = []
+        labels = []
+        i = 0
+        for line in Holter:
+            #print(line)
+            i += 1
+            if i <= 2:
+                continue
+            
+            line_split = line.split("\t")
+            rr.append(line_split[0])
+            rrInts.append(line_split[1])
+            labels.append(line_split[2])
+            
+            
+        #holter = np.loadtxt(fileName, dtype = 'U', skiprows = 3, delimiter = '\t')
+        self.RRtimes = np.array(rr, dtype = str)       #First column
+        self.RRInts = np.array(rrInts, dtype = float)      #Second column
+        self.Labels = np.array(labels, dtype = str)        #Third column
         
         #Now we add all the values to the dictionary associated to the patient
         pat = {}
@@ -63,11 +82,6 @@ class HolterData(object):
         pat['RRInt'] = self.RRInts
         pat['Labels'] = self.Labels
         return pat
-        
-        
-        
-        
-        
         
         
         
