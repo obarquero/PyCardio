@@ -70,10 +70,19 @@ class HRV(object):
 
     
     def avnn(self, nn):
-        """
-        Function that computes the AVNN, that is, the average value of all NN 
-        intervals computed over the complete time series that is passed as 
-        input parameter.
+        """Compute AVNN time domain index. The average value of all NN intervals computed 
+        over the complete time series.
+            
+        Parameters
+        ----------
+        nn : numpy array (n_samples, 1)
+            NN intervals time series, in ms units.
+            
+        Returns
+        -------
+        mu : float 
+            AVNN index
+
         """
         #Mean of the NN interval series
         mu = np.mean(nn)
