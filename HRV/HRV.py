@@ -70,7 +70,8 @@ class HRV(object):
 
     
     def avnn(self, nn):
-        """Compute AVNN time domain index. The average value of all NN intervals computed 
+        """
+        Compute AVNN time domain index. The average value of all NN intervals computed 
         over the complete time series.
             
         Parameters
@@ -91,7 +92,8 @@ class HRV(object):
     
     def nn50(self, nn):
 
-        """Compute NN50 time domain index. The index is computed as the number
+        """
+        Compute NN50 time domain index. The index is computed as the number
         of consecutive NN intevals that differ by more than 50 msec.
             
         Parameters
@@ -103,7 +105,6 @@ class HRV(object):
         -------
         res : int 
             NN50 time domain index [ms].
-    
         """
         
        
@@ -119,9 +120,19 @@ class HRV(object):
     
     def pnn50(self, nn):
         """
-        Function that computes the pNN50 index, that is, the percentage 
-        of adjacent pairs of NN intervals that are more than 50 msg of 
-        the entire time series that is passed as the input parameter.
+        Compute pNN50 time domain index. The index is computed as the fraction
+        of consecutive NN intervals that differ by more than 50 msec.
+            
+        Parameters
+        ----------
+        nn : numpy array (n_samples, 1)
+            NN intervals time series, in ms units.
+            
+        Returns
+        -------
+        res : float 
+           pNN50 time domain index.
+        
         """
         #Differences between adjacent NN intervals.
         dd = np.diff(nn)
@@ -135,10 +146,24 @@ class HRV(object):
     
     def pnnX(self, nn, x):
         """
-        This function computes the pNNX index, that is, the percentage of 
-        adjacent pairs of NN intervals that are more than X msg of the entire 
-        time series that is passed as the input parameter.
+        Compute pNNx time domain index. The index is computed as the fraction
+        of consecutive NN intervals that differ by more than x msec.
+            
+        Parameters
+        ----------
+        nn : numpy array (n_samples, 1)
+            NN intervals time series, in ms units.
+        
+        x : float
+            X in ms, difference between consecutive NN intervals.
+            
+        Returns
+        -------
+        res : float 
+           pNNx time domain index.
         """
+        
+        
         #Differences between adjacent NN intervals.
         d = np.diff(nn)
         #Number of adjacent intervals whose distance is greater than x ms
@@ -151,9 +176,18 @@ class HRV(object):
     
     def rmssd(self, nn):
         """
-        Function that computes the RMSSD, that is, the square root of the squared 
-        differences between successive NN intervals of the entire time series 
-        that is passed as input parameter.
+        Compute RMSSD time domain index. The index is computed as the root mean
+        square of successive RR interval differences
+            
+        Parameters
+        ----------
+        nn : numpy array (n_samples, 1)
+            NN intervals time series, in ms units.
+        
+        Returns
+        -------
+        res : float 
+           RMSSD time domain index, [ms].          
         """
         #Differences between adjacent NN intervals.
         d = np.diff(nn)
@@ -166,9 +200,22 @@ class HRV(object):
         
     def sdann(self, nn, t = None, window_min = 5):
         """
-        Function that computes the SDANN, that is, the standard deviation 
-        of the means of segments of 5 min of the whole time series that is 
-        passed as input parameter
+        Compute SDANN time domain index. The index is the standard deviation of
+        the average NN intervals for each 5 min segment of a 24 hh HRV recording
+            
+        Parameters
+        ----------
+        nn : numpy array (n_samples, 1)
+            NN intervals time series, in ms units.
+        t : numpy arrary (n_sample, 1), optional
+            Vector of time in ms units.
+        window_min : int, optional
+            Segment length in minutes.
+            
+        Returns
+        -------
+        stadev : float 
+           SDANN time domain index, [ms].
         """                 
         if t == None:
             t = np.cumsum(nn)/1000.     #in seconds
@@ -201,9 +248,22 @@ class HRV(object):
     
     def sdnn(self, nn):
         """
-        Function that computes the SDNN, that is, the standard deviation of 
-        all NN intervals computed over the complete time series that is passed 
-        as input parameter.
+        Compute SDANN time domain index. The index is the standard deviation of
+        the average NN intervals for each 5 min segment of a 24 hh HRV recording
+            
+        Parameters
+        ----------
+        nn : numpy array (n_samples, 1)
+            NN intervals time series, in ms units.
+        t : numpy arrary (n_sample, 1), optional
+            Vector of time in ms units.
+        window_min : int, optional
+            Segment length in minutes.
+            
+        Returns
+        -------
+        stadev : float 
+           SDANN time domain index, [ms].
         """
         #Standard deviation of the series of NN intervals.
         stdev = np.std(nn, ddof=1)
