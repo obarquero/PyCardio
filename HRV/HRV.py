@@ -81,8 +81,7 @@ class HRV(object):
         Returns
         -------
         mu : float 
-            AVNN index
-
+            AVNN time domain index [ms].
         """
         #Mean of the NN interval series
         mu = np.mean(nn)
@@ -91,11 +90,24 @@ class HRV(object):
        
     
     def nn50(self, nn):
+
+        """Compute NN50 time domain index. The index is computed as the number
+        of consecutive NN intevals that differ by more than 50 msec.
+            
+        Parameters
+        ----------
+        nn : numpy array (n_samples, 1)
+            NN intervals time series, in ms units.
+            
+        Returns
+        -------
+        res : int 
+            NN50 time domain index [ms].
+    
         """
-        This function computes the NN50 index, that is, the number of adjacent 
-        pairs of NN intervals that are more than 50 msg of the entire time 
-        series that is passed as the input parameter.
-        """
+        
+       
+
         #Differences between adjacent NN intervals.
         d = np.diff(nn)
         #Number of adjacent intervals whose distance is greater than 50ms
