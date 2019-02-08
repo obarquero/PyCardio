@@ -207,8 +207,10 @@ class HRV(object):
         ----------
         nn : numpy array (n_samples, 1)
             NN intervals time series, in ms units.
+            
         t : numpy arrary (n_sample, 1), optional
             Vector of time in ms units.
+            
         window_min : int, optional
             Segment length in minutes.
             
@@ -255,8 +257,10 @@ class HRV(object):
         ----------
         nn : numpy array (n_samples, 1)
             NN intervals time series, in ms units.
+            
         t : numpy arrary (n_sample, 1), optional
             Vector of time in ms units.
+            
         window_min : int, optional
             Segment length in minutes.
             
@@ -273,9 +277,25 @@ class HRV(object):
     
     def sdnnidx(self, nn, t = None, window_min = 5):
         """
-        Funcion que computa la sdnnidx, es decir, el valor medio de las std del
-        segmento de 5 minutos computado sobre la serie temporal completa que se 
-        pasa como parametro de entrada
+        Compute SDNN-index time domain index. Mean of the standard deviations 
+        of all NN intervals for all 5-minute segments of the entire recording.
+        Usually 24 hh Holter recordings
+            
+        Parameters
+        ----------
+        nn : numpy array (n_samples, 1)
+            NN intervals time series, in ms units.
+            
+        t : numpy arrary (n_sample, 1), optional
+            Vector of time in ms units.
+            
+        window_min : int, optional
+            Segment length in minutes.
+            
+        Returns
+        -------
+        res : float 
+           SDNN-index time domain index, [ms].
         """
         if t == None:
             t = np.cumsum(nn)/1000.             
@@ -308,8 +328,18 @@ class HRV(object):
     
     def sdsd(self, nn):
         """
-        Function that computes sdsd, that is, standard deviation of the 
-        differences between adjacent NN intervals.
+        Compute SDSD time domain index. Standard deviation of differences 
+        between adjacent NN intervals.
+            
+        Parameters
+        ----------
+        nn : numpy array (n_samples, 1)
+            NN intervals time series, in ms units.
+        
+        Returns
+        -------
+        res : float 
+           SDSD time domain index, [ms].  
         """
         #First we obtain the differences of the intervals NN
         d = np.diff(nn)        
@@ -323,19 +353,37 @@ class HRV(object):
         
     def elipse(self, xc, yc, theta, sd1, sd2, pintar = None):
         """
-        Function that constructs an ellipse and paints it, with the parameters 
-        that are indicated in its entrance
+        Function that constructs an ellipse using a center localization given by
+        xc and yc, the angle of the coordinates axes with respect to the horizontal
+        given by theta, and lenthg of semi-axes given by sd1 and sd2. This funcionts
+        is used to plot the estimation of the of the HRV Geometrical indices SD1 and
+        SD2.
         
-        Input arguments:        
-            Xc:     coordinate x of the center of the ellipse
-            Yc:     coordinate y from the center of the ellipse
-            Theta:  angle of the coordinate axes of the ellipse, with center c (xc, yc), 
-                    with respect to the horizontal
-            Sd1:    length of the x axis of the ellipse
-            Sd2:    length of the y axis of the ellipse        
-        Output arguments:
-            X:      points of the ellipse along the x-axis
-            Y:      points of the ellipse along the y-axis     
+        Parameters
+        ----------        
+        xc : float
+            Coordinate x of the center of the ellipse.
+        yc : float
+            Coordinate y from the center of the ellipse.
+        theta : float  
+            Angle of the coordinate axes of the ellipse, with center c (xc, yc), 
+            with respect to the horizontal.
+        sd1 : float
+            Length of the x axis of the ellipse.
+        sd2 :
+            Length of the y axis of the ellipse.
+            
+        Returns
+        -------
+            x : numpy array (n,1)
+                X coordinates of the points of the ellipse along the x-axis.
+            Y:  numpy array (n,1)   
+                Y coordinates of the points of the ellipse along the y-axis.
+            
+        See also
+        --------
+        
+        
         """
        #By default the ellipse is not painted
         if pintar == None:
@@ -364,8 +412,20 @@ class HRV(object):
         
     def hrvTriangIndex(self, rr, flag=None):
         """
-        Function that computes the triangular index, that is, the total number 
-        of intervals rr between the height of the histogram.
+        Compute HRV traingular geometrical index. Total number of all NN intervals
+        divided by the height of the histogram of all NN intervals measured
+        on a discrete scale with bins of 7.8125 ms (1/128 seconds).
+            
+        Parameters
+        ----------
+        rr : numpy array (n_samples, 1)
+            RR intervals time series, in ms units.
+        flag : boolean
+            It allows to sketch the histogram used to compute the HRV triangular index
+        Returns
+        -------
+        res : float 
+           HRV traingular index.
         """        
         if flag == None:
            flag = 0
