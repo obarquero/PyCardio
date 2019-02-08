@@ -466,9 +466,20 @@ class HRV(object):
         
     def logIndex(self, rr, pintar=None):
         """        
-        Function that computes the triangular interpolation of the intervals rr
-        Output arguments:
-            res: exponent of the exponential that best adjusts -> k*exp(-res*t)
+        Compute the Logarithmic index. Coefficient phi of the negative 
+        exponential curve k * exp(−phi*t), which is the best approximation of 
+        the histogram of absolute differences between adjacent NN intervals.
+            
+        Parameters
+        ----------
+        rr : numpy array (n_samples, 1)
+            RR intervals time series, in ms units.
+        pintar : boolean
+            It allows to sketch the histogram used to compute the HRV triangular index
+        Returns
+        -------
+        res : float 
+           Logarithmic Index.
         """
        
         if pintar == None:
@@ -529,18 +540,29 @@ class HRV(object):
         
     def mediasPoincare(self, rr, flag = None):
         """
-        Function that computes the geometric HRV indices based on the Poincare Plot.
+        Computes the geometric HRV indices based on the Poincare Plot.
         
-        Output Parameters:        
-            sd1:    dispersion of map points perpendicular to the axis of the identity line
+        Parameters
+        ----------
+        rr : numpy array (n_samples, 1)
+            RR intervals time series, in ms units.
+        pintar : boolean
+            It allows to sketch the histogram used to compute the HRV triangular index
+        Returns
+        -------
+            sd1 : float
+                Dispersion of map points perpendicular to the axis of the identity line
         
-            sd2:    dispersion of map points along the axis of the identity line
+            sd2 : float
+                Dispersion of map points along the axis of the identity line
         
-            cup:    contributions for the decelerations of the heart rhythm by the Poincare points,
-                    based on the asymmetries of the map
+            cup : float
+                Contributions for the decelerations of the heart rhythm by the 
+                Poincare points, based on the asymmetries of the map.
         
-            cdown:  contributions for the accelerations of the cardiac rhythm by the points of the Poincare,
-                    based on the asymmetries of the map
+            cdown : float
+                Contributions for the accelerations of the cardiac rhythm by 
+                the points of the Poincare, based on the asymmetries of the map.
         """
        
         if flag == None:
@@ -607,11 +629,21 @@ class HRV(object):
         
         
     def tinn(self, rr, flag = None):
-        """                
-        Function that computes the triangular interpolation of NN
+        """     
+        Function that computes TINN index. Baseline width of the minimum square
+        difference triangular interpolationof the highest peak of the 
+        histogram of all NN intervals.
         
-        Output arguments:
-            res:    width of the triangular interpolation
+        Parameters
+        ----------
+        rr : numpy array (n_samples, 1)
+            RR intervals time series, in ms units.
+        flag : boolean
+            It allows to sketch the histogram used to compute the HRV triangular index
+        Returns
+        -------
+        res : float 
+           TINN index [ms].
         """
         #Number of bins with fs = 128, recommendation of ref.
         if flag == None:
@@ -719,7 +751,37 @@ class HRV(object):
         
 ############################## HRV spectral #################################
     def interp_to_psd(self,rr, t = None, fs = 4., method = 'cubic'):
-    
+        """
+        Function that interpolates the RR interval time series to provide
+        an evenly-sampled rr interval time series to be used in HRV frequency domain
+        analysis. By default, the new RR interval time series is reinterpolated at
+        fs = 4Hz.
+        
+        Parameters
+        ----------
+        rr : numpy array (n_samples, 1)
+            RR intervals time series, in ms units.
+        t : numpy array (n_samples, 1), optional
+            Time instants vector. If it is not provided, t is built as the cumsum
+            of the rr intervals time series.
+        fs : float, optional
+            Sampling frequency of the new reinterpolated signal. By default is 4 Hz
+        method : "cubic", "linear","nearest","zero","slinear", "quadratic","cubic", default = "cubic"
+            Kind of interpolation, by default spline interpolation of third order. For more details
+            see 
+        Returns
+        -------
+        rr_interp : numpy array (n_samples,1)
+            RR interval time serie reinterpolated at 4Hz.
+        t_new : numpy array (n_samples, 1)
+            Time vector instant at which occurr RR intervals. 
+           
+        See also
+        --------
+        
+        scipy.interpolate.interp1d
+        
+        """
         ts = 1/fs #sampling frequency
         
         t_new = np.arange(t[0],t[-1],ts) #nuevo vector para la interpolacion
@@ -735,6 +797,25 @@ class HRV(object):
     #Función que calcula el periodograma de Welch para el intervalo de tiempo rr
     #dado, que se supone que se interpola en fs
     def Welch_Periodogram(self,rr, fs = 4., window = 'hamming', nperseg = 256, noverlap = 256/2, nfft  = 1024):
+        """
+        Estimate power spectral dnesity using Welchs method.
+        
+        Notes
+        -----
+        
+        It is just a wrapper function of the method provided by
+        
+        scipy.signal.welch
+        
+        References
+        ----------
+        .. [1] P. Welch, "The use of the fast Fourier transform for the
+        estimation of power spectra: A method based on time averaging
+        over short, modified periodograms", IEEE Trans. Audio
+        Electroacoust. vol. 15, pp. 70-73, 1967.
+        .. [2] M.S. Bartlett, "Periodogram Analysis and Continuous Spectra",
+        Biometrika, vol. 37, pp. 1-16, 1950.
+        """
         
         rr = rr - np.mean(rr)
         
@@ -748,6 +829,41 @@ class HRV(object):
                     #f: vector frecuencia
                  
     def spectral_indices(self,Pxx, f, duration = 5):
+        """
+        Function that computes the HRV frequency domain indices. It computes the following
+        indices using the PSD. Definition of the frequency bands depends on the 
+        segment duration. By default, spectral indices are computed for 5 min segments.
+            * Total Power [ms^2]. The variance of NN intervals over the temporal segment. Frequency range <= 0.4 Hz.
+            * PULF [ms^2]. Power in ULF range. Frequency range <= 0.003 (Only segments with more than 5 min).
+            * PVLF [ms^2]. Power in VLF range. Frequency range <= 0.04 Hz (5 min), [0.003,0.04] Hz (>= 5 min).
+            * PLF [ms^2]. Power in LF range. Frequency range [0.04-0.15] Hz.
+            * PHF [ms^2]. Power in HF range. Frequency range [0.15-0.4] Hz.
+            * LF/HF. Ratio PLF/PHF.
+            
+        Parameters
+        ----------
+        Pxx : numpy array (n_samples,1)
+            Power spectral density of the rr interval time series. [ms^2/Hz]
+        f : numpy array (n_samples, 1)
+            Frequency vector [Hz]
+        duration: int, optional. Default = 5 (min)
+            Length, in minutes, of the RR interval time series.
+            
+        Returns
+        -------
+        Ptot : float
+            Total power.
+        Pulf : float
+            Power in the ULF range.
+        Pvlf : float
+            Power in the VLF range.
+        Plf : float
+            Power in the LF range.
+        Phf: float
+            Power in the HF range.
+        lfhf_ratio : float
+            Ration PLF/PHF.
+        """
         
         if duration == 5:
             indVlf = f <= 0.04
@@ -786,6 +902,28 @@ class HRV(object):
         return Ptot, Pulf, Pvlf, Plf, Phf, lfhf_ratio
     
     def main_interp(self,rr, t = None, duration = 5):
+        """
+        Helping fuction to create a new interpolated rr interval time series.
+        
+        Parameters
+        ----------
+        
+        rr : numpy array (n_samples, 1)
+            RR intervals time series, in ms units.
+        t : numpy array (n_samples, 1), optional
+            Time instants vector. If it is not provided, t is built as the cumsum
+            of the rr intervals time series.
+        duration: int, optional. Default = 5 (min)
+            Length, in minutes, of the RR interval time series.
+            
+        Returns
+        -------
+        numpy array (n_samples,1)
+            RR interval time serie reinterpolated at 4Hz.
+        t_new : numpy array (n_samples, 1)
+            Time vector instant at which occurr RR intervals. 
+        
+        """
         if t == None:
             t = np.cumsum(rr)/1000.
     
@@ -796,12 +934,23 @@ class HRV(object):
         return rr_interpolated_4_hz, t_new
     
     def main_welch(self,rr_interpolated_4_hz, t = None, duration = 5):
+        """
+        Wrapping function to obtain the Power Spectral Density of the RR interval time series.
+        
+        See also
+        --------
+        
+        : Welch_Periodogram
+        """
         
         f, Pxx = self.Welch_Periodogram(rr_interpolated_4_hz,  4., 'hamming', 256, 128, 1024)
         
         return f, Pxx
     
     def main_spectral_indices(self,Pxx, f = None, duration = 5):
+        """
+        Wrapping funciton to obtain the spectral indices.
+        """
         
         Ptot, Pulf, Pvlf, Plf, Phf, lfhf_ratio = self.spectral_indices(Pxx, f, duration = 5.)
         
