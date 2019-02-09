@@ -68,8 +68,9 @@ class HRV(object):
     In this class, Time-Domain and Frequency-Domain methods are implemented.
     
     This introduction was taking from:
-        * O. Barquero-Pérez: "Robust Signal Processing in Cardiac Signals:
-        Applications in Heart Rate Variability, Heart Rate Turbulence and Fibrillatory Arrhythmias".
+        
+        * O. Barquero-Pérez: "Robust Signal Processing in Cardiac Signals: Applications
+        in Heart Rate Variability, Heart Rate Turbulence and Fibrillatory Arrhythmias".
         PhD Dissertation. 2014 (Spain).
     """
     def __init__(self):
