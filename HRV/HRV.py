@@ -1,10 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Calculates from the RR intervals the statistical time domain variables and the 
-geometrical variables to characterize the heart rate variability (HRV).
-The RR intervals used are all of them previous to valid tachograms according to the 
-conditions evaluated in the characterization of the heart rate turbulence (HRT).
-"""
+
 
 from __future__ import unicode_literals
 import numpy as np
@@ -16,7 +11,67 @@ import matplotlib.pyplot as plt
 from scipy import signal
 
 class HRV(object):
+    """
+    This class allows to perform a basic Heart Rate Variability Analysis from an
+    RR-Interval time series. It is supposed that a numpy array (n_samples, 1) with 
+    RR intervals is available, as well as beat label numpy array vector.
     
+    HRV is the term used to describe the variations in the time intervals between
+    consecutive heart beats. HRV is usually studied by analyzing the
+    RR-interval time series (beat-to-beat time interval) derived from the ECG.
+    The extraction of the RR-intervals from the ECG can be achieved by measuring
+    the time intervals between QRS complexes, which are the electrical
+    marks registered in an ECG when a cardiac beat occurred. RR-interval time
+    series (sometimes called RR tachogram) is usually constructed as a function
+    of the interval number. HRV is due to the activity of the SA node, as the 
+    source of the repetitive impulses that generate the normal beats. 
+    The SA node is in turninfluenced by the ANS, namely by the parasympathetic 
+    and sympathetic branches, which interact in a complex way with a variety of
+    reflexes and systems. HRV has been suggested as a noninvasive tool to assess
+    the state of the system that controls the heart rhythm and its relationship
+    with cardiovascular mortality. The clinical relevance of the HRV has been 
+    established in several studies. Hon and Lee reported in 1965 that fetal 
+    distress was preceded by alterations in the interbeat intervals. Wolf et al. 
+    established in 1977 an association of higher risk of post-infarction mortality 
+    in patients with reduced HRV. Indeed, it has been shown that low HRV is 
+    associated with some cardiac illness: myocardial infarction, atherosclerosis, 
+    heart failure, and even with ageing. The underlying assumption, 
+    when studying HRV, is that short-term and long-term variations in HR have 
+    different physiological origins and the magnitude of these variations has 
+    been shown to be indicative of the autonomic state of the subject. For instance, 
+    after a myocardial infarction, the innervation level of the heart decreases, 
+    and part of the nervous control of this organ can be lost. The HRV reflects 
+    this control loss and it makes possible the classification of SCD risk groups.
+    The degeneration of the ANS due to the ageing can also be inferred by the 
+    analysis of the HRV. Therefore, it would be possible to characterize 
+    different cardiovascular states by just measuring the HRV.
+    The methods used in HRV analysis can be very roughly divided into three main 
+    groups, namely, time-domain methods, frequency-domain methods, and nonlinear methods.
+    Time-domain methods are the simplest ones in computational terms. They treat 
+    the RR-interval sequence as an unordered set of intervals and employ different 
+    techniques to express the variance of such data. They can be split into two categories 
+    statistical descriptors, and geometrical descriptors. Frequency-domain methods 
+    are based on PSD estimation, which providesthe basic information on how the
+    power (i.e. the variance) is distributed as a function of frequency. The different
+    systems modulating the HR (i.e. modulating the behavior of the ANS) oscillate
+    spontaneously with specific frequencies. Thus, when the PSD is taken from a 
+    HRV signal, it is expected to extract information on those systems related 
+    to cardiac autonomic function, that is, to identify the harmonic frequency
+    components that correspond to each system. It is possible, for example, to
+    quantify the power of the different spectral components in PSD as a 
+    measurement of the contribution of each system to the global variability.
+    PSD is generally estimated from the RR-Interval time series. Since it is a
+    representation of the beat-to-beat variability, it is inherently a discrete and
+    uneven time series (this is the reason for the variability). However, almost
+    all of the PSD estimation methods require evenly sampled data.
+    
+    In this class, Time-Domain and Frequency-Domain methods are implemented.
+    
+    This introduction was taking from:
+        * O. Barquero-Pérez: "Robust Signal Processing in Cardiac Signals:
+        Applications in Heart Rate Variability, Heart Rate Turbulence and Fibrillatory Arrhythmias".
+        PhD Dissertation. 2014 (Spain).
+    """
     def __init__(self):
         self.HRV_statistical = {} 
         self.HRV_geometrical = {}
@@ -962,15 +1017,21 @@ class HRV(object):
          
     def threshold_filter(self, rr):
         """
-        Function that identifies a rr-interval as non-sinusal following the rule:
-            if RR(n) > thr_up or RR(n) < thr_low
-                where:
-                thr_up = 2000
-                thr_low = 300
-        Verify this thresholds and find a reference
-        Output arguments:
-            ind_not_N:  has 1 in the position where there is a non-sinusal beat as
-                        classified by the threshold criterion
+        Artifact detection function using threshold method. It processes the RR 
+        interval time series in a beat-wise fashion. An interval is identifiead as
+        non-sinusal if RR(n) > thr_up or RR(n) < thr_low
+        where: thr_up = 2000 (ms); thr_low = 300 (ms).
+        
+        Parameters
+        ----------
+        rr : numpy array (n_samples, 1)
+            RR intervals time series, in ms units.
+        Returns
+        -------
+        ind_not_N : boolean numpy array (n_samples,1)
+            Boolean array with True in locations where the corresponding RR interval
+            is non-sinusal (not Normal).
+
         """
         ind_not_N = [False]*len(rr)
         ind_not_N = np.array(ind_not_N) #convert to a numpy array
@@ -987,14 +1048,27 @@ class HRV(object):
         
     def beat_label_filter(self, beat_labels, numBeatsAfterV = 4):
         """
-        Function that identifies non-normal beats, and filters the rr signal to
-        produce a vector identifying the positions where are non-normal beats.
-
-        Input arguments:
-            numBeatsAfterV <= 4
-        Output arguments:
-            ind_not_N:  has 1 in the position where there is a non-sinusal beat as
-                        classified by the label information.
+        Artifact detection function using beat labels. It processes the RR 
+        interval time series in a beat-wise fashion. An interval is identified as
+        non-sinusal using the information of the beat detection label. Every
+        label different from "N" is considered a nont-sinusal beat. Additionally,
+        beats labele as "V" (ventricular), induces that the posterior beats are 
+        considered non-sinusal, even if the label is "N". The number of beats
+        after the "V" is controlled by "numBeatsAfterV".
+        
+        Parameters
+        ----------
+        beat_labels : char numpy array (n_samples, 1)
+            Labels for each beat indicating the nature ('N': Normal,
+            'V': Ventricular, else).
+        numBeatsAFterV : int , optional. Default = 4
+            Number of beats after a ventricular one ('V') that are considered non-sinusal.
+            
+        Returns
+        -------
+        ind_not_N : boolean numpy array (n_samples,1)
+            Boolean array with True in locations where the corresponding RR interval
+            is non-sinusal (not Normal).
         """
         beat_labels = np.array(beat_labels)
         ind_not_N =[False] * len(beat_labels) #vector with False in every position
@@ -1025,17 +1099,22 @@ class HRV(object):
         
     def perct_filter(self, rr, prct):
         """
-        Function that identifies a rr-interval as non-sinusal following the rule
-
-        if RR(n) > prct * RR(n-1) then RR(n) is non-sinusal
-
-        Output arguments:
-            ind_non_N:  has 1 in the position where there is a non-sinusal beat as
-                        classified by the percentage criterion.
-
-
-        TO_DO implement a method that takes into account that the previous beat should be labeled
-        as normal
+        Artifact detection function using information from previous interval. It processes the RR 
+        interval time series in a beat-wise fashion. Te actual RR interval is identified as
+        non-sinusal  if the following equation holds:
+            RR(n) > prct * RR(n-1) then RR(n) is non-sinusal
+        
+        Parameters
+        ----------
+        rr : numpy array (n_samples, 1)
+            RR intervals time series, in ms units.
+        prct : float
+            Percentage used in the equation.
+        Returns
+        -------
+        ind_not_N : boolean numpy array (n_samples,1)
+            Boolean array with True in locations where the corresponding RR interval
+            is non-sinusal (not Normal).
         """
 
         ind_not_N = [False]*len(rr)
@@ -1056,16 +1135,32 @@ class HRV(object):
         
     def artifact_ectopic_detection(self, rr, labels, prct, numBeatsAfterV = 4):
         """
-        Function that calls detection methods to evaluate rr.         
+        Artifact detection function. This function call all the methods and 
+        combine the artifact-ectopic detection from them.
         
-        For a rr interval to be valid, it must pass all three detection methods.
+        Parameters
+        ----------
+        rr : numpy array (n_samples, 1)
+            RR intervals time series, in ms units.
+        labels : char numpy array (n_samples, 1)
+            Labels for each beat indicating the nature ('N': Normal,
+            'V': Ventricular, else).
+        prct : float
+            Percentage used in the equation.
+        numBeatsAFterV : int , optional. Default = 4
+            Number of beats after a ventricular one ('V') that are considered non-sinusal.
+            
+        Returns
+        -------
+        ind_not_N_beats: boolean numpy array (n_samples,1)
+            Boolean array with True in locations where the corresponding RR interval
+            is non-sinusal (not Normal).
+    
         
-        NOTE: RECOMMENDATION use this function with a detrended signal, get
-        better results
-        
-        Output arguments:
-            ind_not_N_beats:  has 1 in the position where there is a non-sinusal beat as
-                              classified by the detection methods
+        NOTES
+        -----
+            As a recommendation use this function usgin a detrended rr interval signal,
+            it usually produces better results.
         """
 
         ind_not_N_1 = np.array(self.beat_label_filter(labels, numBeatsAfterV))               
@@ -1083,10 +1178,24 @@ class HRV(object):
         
     def is_valid(self, ind_not_N,perct_valid = 0.2):
         """
-        Function that checks if there are more than 20% of invalid values ​​in the vector, 
-        where True is an invalid value
+        Function that checks the validity of a RR-interval time seris to be used
+        in the HRV analysis. Usually if there are more than 20% of non-sinusals
+        beats the segment is discarded for the posterior analysis.
         
-        Returns True if it contains less than 15% of invalid values
+        Parameters
+        ----------
+        ind_not_N : boolean numpy array (n_samples,1)
+            Boolean array with True in locations where the corresponding RR interval
+            is non-sinusal (not Normal).
+        
+        perct_valid : float
+            Percentage of the allowed Non-sinusal beats to use the segment
+            for further HRV analysis.
+            
+        Returns
+        -------
+        res : boolean
+            If True, the segment is valid to be used in HRV analysis.
         """
               
         num_not_valid = sum(ind_not_N == True)
@@ -1102,11 +1211,31 @@ class HRV(object):
             
             
     def artifact_ectopic_correction(self, rr, ind_not_N, method='cubic'):
-        
+    
         """
-        Function that corrects ectopic beat by interpolation. 
+        Function that corrects artifact-ectopic beats by interpolation. 
         
-        The interpolator method is given by the string method (cubic','linear','nearest').
+        Parameters
+        ----------
+        rr : numpy array (n_samples, 1)
+            RR intervals time series, in ms units.
+        ind_not_N_beats: boolean numpy array (n_samples,1)
+            Boolean array with True in locations where the corresponding RR interval
+            is non-sinusal (not Normal).
+        method : "cubic", "linear","nearest","zero","slinear", "quadratic","cubic", default = "cubic"
+            Kind of interpolation, by default spline interpolation of third order. For more details
+            see 
+        Returns
+        -------
+        rr_correcte : numpy array (n_samples,1)
+            RR interval time serie with interpolated RR intervals in places 
+            detected as non-sinusal.
+    
+        See also
+        --------
+        
+        scipy.interpolate.interp1d
+        
         """
         
                 
