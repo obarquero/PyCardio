@@ -1,5 +1,33 @@
 # -*- coding: utf-8 -*-
 """
+The term HRT was firstly used by Schmidt et al.to describe the short term 
+fluctuations in sinus HR that occur following VPCs.
+
+In normal subjects, sinus rate initially accelerates and then decelerates
+compared with the HR previous to the VPC. Finally, the HR returns to
+the baseline. The RR-intervals sequences comprising 5 sinus RR-intervals before VPC, the compensatory pause, and
+subsequent 15 (or 20) sinus RR-intervals, is usually called VPC-tachogram.
+The physiological mechanism of HRT is supposed to be based on a baroreflex source, 
+which has been confirmed in the literature. According to this, systolic blood
+pressure produced by the VPC is lower than previous beats, which leads to an 
+inefficient baroreflex input. In turn, it causes vagal inhibition, increasing the HR.
+Subsequent deceleration is due to the ensuing compensatory pause and the increase 
+in blood pressure, which induces a vagal stimulation and sympathetic withdrawal.
+
+It has been suggested that HRT, being a vagally-dependent effective measure of
+baroreflex sensitivity related to the advancement of heart failure, might be used 
+as a marker of congestive heart failure progression.
+
+Indeed, in patients with heart failure regardless of etiology, HRT consistently
+predicted heart failure progression and all cause mortality [49]. HRT seems
+to be particularly useful in identifying high-risk patients with preserved left
+ventricular function, the group not covered by current indications for ICD.
+ISAR-HRT [48] was the first study that showed independent role of the HRT
+in predicting mortality not only in patients with significantly decreased Left
+Ventricular Ejection Fraction (LVEF), but especially in those with LVEF
+above 30%.
+
+
 Extracts from all rr intervals:
     1.  The valid tachograms (associated to the correspondient labels and their ventricular beat position for each)
     2.  The mean tachogram
@@ -82,19 +110,37 @@ class HRT(object):
         
     def HRT_preprocessing(self, Filter_type = 'Watanabe'):        
         """
-        Function that performs a complete HRT preprocessing steps that includes:
+        HRT is usually assessed in Holter recordings. A previous step to remove
+        inadequate VPC-tachograms is required for obtaining accurate HRT measurements. 
+        The guidelines indicate to remove a VPC-tachogram when one of the following conditions are fulfilled
+        
+            * The five sinus beats preceding the VPC and the 15 sinus beats following the 
+            compensatory pause include some arrhythmia, artifacts or false classifications.
+            * RR-intervals < 300 ms.
+            * RR-intervals > 2000 ms.
+            * Difference between consecutive RR-intervals higher than 200 ms.
+            * Difference between any RR-interval and the reference interval (mean 
+            of the five sinus intervals preceding the VPC) higher than 20%.
+            *Prematurity smaller than 20% of the reference interval.
+            * Compensatory pause smaller than 20% of the reference interval.
+            
+        This function performs a complete HRT preprocessing steps that includes:
             1.  Find all positions of Ventricular beats
             2.  Find all VPC-tachograms (5beats pre+VB+PC+20beats post)
             3.  Filter all VPC-tachograms; i.e. find all the availables VPC-tachograms
                 to be used on the HRT analysis
-        This function fills the following variables described at the begining:
+        
+        This function fills the following attributes described at the begining:
             i.   tachograms
             ii.  v_pos_tachs
             iii. tachograms_ok
             iv.  v_pos_tachs_ok
             v.   mean_tachogram_ok
-        Input arguments:
-            Filter_type = 'Watanabe', it allows to select filter from Bauer papers
+        
+        Parameters
+        ----------
+        Filter_type : str, optional. Default = "Watanabe"
+             So far, only "Watanabe' filter is allowed.
         """
         
         possible_tachs = []             #all possible tachograms
@@ -181,10 +227,15 @@ class HRT(object):
     def RRBeforeV(self, mins_before_V = 3):
         """
         Function that saves the values of the rr intervals during mins_before_V
-        minutes before the ventricular beat.        
-        Input arguments:
-            mins_before_V = period of minutes (3 minutes by default) before the tachogram, 
-                            in which we want to save the values ​​of the RR intervals
+        minutes before the ventricular beat. This funcition is intended for research purposes
+        to be able to analyze HR time series before an individual VPC.
+        
+        Parameters
+        ----------
+        mins_before_V : int, optional. Default = 3
+            Integer indicating the period of minutes (3 minutes by default), before the tachogram, 
+            that is going to be saved for further studies.
+        
         """        
         ms_before_V = mins_before_V * 60000 #in miliseconds
 
@@ -207,7 +258,22 @@ class HRT(object):
             
     def TurbulenceSlope(self, VPC_tach):        
         """
-        Computes the Turbulence Slope on the tachogram given by parameter
+        Function that computes the Turbulence Slope (TS) index.
+        The second phase of the HRT (late deceleration) is quantified by 
+        Turbulence Slope (TS), which is the slope of the steepest regression 
+        line observed over any sequence of five consecutive RR-intervals within 
+        the first 15 sinus rhythm RR-intervals after the compensatory pause.
+
+        Parameters
+        ----------
+        VPC_tach : numpy array (n_samples,1)
+            VPC tachogram. It should be of length 21 samples. 5 previous to the
+            VPC, the PC and 15 RR-intervals after the PC.
+            
+        Returns
+        -------
+        TS : float
+            Turbulence Slope index.
         """        
         seg_len = 5
         posPC = 6
@@ -227,9 +293,31 @@ class HRT(object):
         return TS
         
         
-    def TurbulenceOnset(self, VPC_tach, posPC = 6, posFin = 16):
+    def TurbulenceOnset(self, VPC_tach):
         """
-        Computes the Turbulence Onset on the tachogram given by parameter
+        This function computes the Turbulence Onset index.
+        
+        The first phase of the HRT (early acceleration) is quantified by Turbulence Onset (TO),
+        which is calculated using the following equation:
+            
+            TO = (RR1 + RR2) − (RR−2 + RR−1) / (RR−2 + RR−1) × 100[%]
+            
+        where RR−2 and RR−1 are the two RR-intervals immediately preceding the
+        VPC coupling interval, and RR1 and RR2 are the RR-intervals immediately 
+        following the compensatory pause.
+        
+        Parameters
+        ----------
+        VPC_tach : numpy array (n_samples,1)
+            VPC tachogram. It should be of length 21 samples. 5 previous to the
+            VPC, the PC and 15 RR-intervals after the PC.
+        
+
+        Returns
+        -------
+        TO : float
+            Turbulence Onset index.
+        
         """    
         TO = ((VPC_tach[7]+VPC_tach[8])-(VPC_tach[3]+VPC_tach[4]))/(VPC_tach[3]+VPC_tach[4])*100;
         

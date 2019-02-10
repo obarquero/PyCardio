@@ -3,6 +3,8 @@
 """
 Created on Wed Oct 25 11:57:24 2017
 
+Script to perform a complete analysisis used in a TFG.
+
 @author: Rebeca
 """
 
