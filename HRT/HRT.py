@@ -1,40 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-The term HRT was firstly used by Schmidt et al.to describe the short term 
-fluctuations in sinus HR that occur following VPCs.
 
-In normal subjects, sinus rate initially accelerates and then decelerates
-compared with the HR previous to the VPC. Finally, the HR returns to
-the baseline. The RR-intervals sequences comprising 5 sinus RR-intervals before VPC, the compensatory pause, and
-subsequent 15 (or 20) sinus RR-intervals, is usually called VPC-tachogram.
-The physiological mechanism of HRT is supposed to be based on a baroreflex source, 
-which has been confirmed in the literature. According to this, systolic blood
-pressure produced by the VPC is lower than previous beats, which leads to an 
-inefficient baroreflex input. In turn, it causes vagal inhibition, increasing the HR.
-Subsequent deceleration is due to the ensuing compensatory pause and the increase 
-in blood pressure, which induces a vagal stimulation and sympathetic withdrawal.
-
-It has been suggested that HRT, being a vagally-dependent effective measure of
-baroreflex sensitivity related to the advancement of heart failure, might be used 
-as a marker of congestive heart failure progression.
-
-Indeed, in patients with heart failure regardless of etiology, HRT consistently
-predicted heart failure progression and all cause mortality [49]. HRT seems
-to be particularly useful in identifying high-risk patients with preserved left
-ventricular function, the group not covered by current indications for ICD.
-ISAR-HRT [48] was the first study that showed independent role of the HRT
-in predicting mortality not only in patients with significantly decreased Left
-Ventricular Ejection Fraction (LVEF), but especially in those with LVEF
-above 30%.
-
-
-Extracts from all rr intervals:
-    1.  The valid tachograms (associated to the correspondient labels and their ventricular beat position for each)
-    2.  The mean tachogram
-    3.  The value of the turbulence slop (TS) and the turbulence onset (TO) for each tachogram,
-        including the mean tachogram (TS_average, TO_average)
-    4.  The RR intervals previous to the tachograms       
-"""
 
 from __future__ import unicode_literals
 import matplotlib.pylab as plt
@@ -43,6 +8,42 @@ import numpy as np
 
 
 class HRT(object):
+    """
+    The term HRT was firstly used by Schmidt et al.to describe the short term 
+    fluctuations in sinus HR that occur following VPCs.
+    
+    In normal subjects, sinus rate initially accelerates and then decelerates
+    compared with the HR previous to the VPC. Finally, the HR returns to
+    the baseline. The RR-intervals sequences comprising 5 sinus RR-intervals before VPC, the compensatory pause, and
+    subsequent 15 (or 20) sinus RR-intervals, is usually called VPC-tachogram.
+    The physiological mechanism of HRT is supposed to be based on a baroreflex source, 
+    which has been confirmed in the literature. According to this, systolic blood
+    pressure produced by the VPC is lower than previous beats, which leads to an 
+    inefficient baroreflex input. In turn, it causes vagal inhibition, increasing the HR.
+    Subsequent deceleration is due to the ensuing compensatory pause and the increase 
+    in blood pressure, which induces a vagal stimulation and sympathetic withdrawal.
+    
+    It has been suggested that HRT, being a vagally-dependent effective measure of
+    baroreflex sensitivity related to the advancement of heart failure, might be used 
+    as a marker of congestive heart failure progression.
+    
+    Indeed, in patients with heart failure regardless of etiology, HRT consistently
+    predicted heart failure progression and all cause mortality [49]. HRT seems
+    to be particularly useful in identifying high-risk patients with preserved left
+    ventricular function, the group not covered by current indications for ICD.
+    ISAR-HRT [48] was the first study that showed independent role of the HRT
+    in predicting mortality not only in patients with significantly decreased Left
+    Ventricular Ejection Fraction (LVEF), but especially in those with LVEF
+    above 30%.
+    
+    
+    Extracts from all rr intervals:
+        1.  The valid tachograms (associated to the correspondient labels and their ventricular beat position for each)
+        2.  The mean tachogram
+        3.  The value of the turbulence slop (TS) and the turbulence onset (TO) for each tachogram,
+            including the mean tachogram (TS_average, TO_average)
+        4.  The RR intervals previous to the tachograms       
+"""
     
     def __init__(self, RRInts = [], Labels = []):
         self.RRInts = RRInts
