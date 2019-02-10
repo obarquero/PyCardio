@@ -9,7 +9,10 @@ import codecs
 import numpy as np
 
 class HolterData(object):
-    
+    """
+    Class that handles the IO to extract information from Holter txt data files.
+    So far, this class is able to read RR interval.txt format from Sorin data.
+    """
     def __init__(self): 
         self.name = ''          #name of the file
         self.HRegTime = {}      #begin and end time of the recording
@@ -20,13 +23,28 @@ class HolterData(object):
         
     def read_holter_file(self, fileName):        
         """
+        Function that read an RR-interval.txt file with Sorin format.
         Extracts the information contained in fileName
-        Saves the file's information in a dictionary with the entrances described below:
+        Saves the file's information in a dictionary with the entrances described below
+        
             - Name: file's name
             - HolterInfo: First line of the file, Holter's various information
             - HRegTime: Begin and end time of the recording
             - RRInt: Values of the RR Intervals
             - Labels: Types of beat (N:normal, V:ventricular, A:atrial)
+            
+        Parameters
+        ----------
+        fileName : str
+            Name of the RR-interval txt from Holter file. It supposed to be in the 
+            current directory.
+        
+        Returns
+        -------
+        pat : dict
+            Dictionary with the complete information from the Holter.  
+            pat['Name'];pat['HolterInfo'];pat['HRegTime'];pat['RRInt'];
+            pat['Labels']
         """
         headerHolter = codecs.open(fileName, 'r', "iso-8859-1")    
         line1 = headerHolter.readline()
