@@ -114,14 +114,18 @@ class HRT(object):
         inadequate VPC-tachograms is required for obtaining accurate HRT measurements. 
         The guidelines indicate to remove a VPC-tachogram when one of the following conditions are fulfilled
         
-            * The five sinus beats preceding the VPC and the 15 sinus beats following the 
-            compensatory pause include some arrhythmia, artifacts or false classifications.
+            * The five sinus beats preceding the VPC and the 15 sinus beats following the compensatory pause include some arrhythmia, artifacts or false classifications.
+            
             * RR-intervals < 300 ms.
+            
             * RR-intervals > 2000 ms.
+            
             * Difference between consecutive RR-intervals higher than 200 ms.
-            * Difference between any RR-interval and the reference interval (mean 
-            of the five sinus intervals preceding the VPC) higher than 20%.
-            *Prematurity smaller than 20% of the reference interval.
+            
+            * Difference between any RR-interval and the reference interval (mean of the five sinus intervals preceding the VPC) higher than 20%.
+            
+            * Prematurity smaller than 20% of the reference interval.
+            
             * Compensatory pause smaller than 20% of the reference interval.
             
         This function performs a complete HRT preprocessing steps that includes:
