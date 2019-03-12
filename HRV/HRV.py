@@ -586,7 +586,7 @@ class HRV(object):
 
         #Graphic representation
         if pintar: 
-            plt.close('all')
+           #plt.close('all')
             plt.bar(X_full,Nabs_full)
             plt.plot(X_full, k*np.exp(res*X_full), 'r')
        
@@ -797,7 +797,7 @@ class HRV(object):
             XX = np.hstack((X1, xo, X2))
             YY = np.hstack((Y1, yo, Y2))
 
-            plt.figure(1)
+            #plt.figure(1)
             plt.hist(rr, nhist)
             plt.plot(XX, YY, color='r', linewidth=2.5)
             plt.xlabel('NN (ms)')
