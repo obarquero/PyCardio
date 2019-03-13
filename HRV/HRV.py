@@ -797,7 +797,8 @@ class HRV(object):
             XX = np.hstack((X1, xo, X2))
             YY = np.hstack((Y1, yo, Y2))
 
-            #plt.figure(1)
+            #calib
+            plt.figure(1)
             plt.hist(rr, nhist)
             plt.plot(XX, YY, color='r', linewidth=2.5)
             plt.xlabel('NN (ms)')
